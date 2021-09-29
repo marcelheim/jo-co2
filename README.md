@@ -8,3 +8,11 @@
     * Docker
 * Docker Desktop
 * Node.js 14
+```properties
+# .env
+INFLUXDB_USERNAME=""
+INFLUXDB_PASSWORD=""
+INFLUXDB_ORG=""
+INFLUXDB_BUCKET=""
+INFLUXDB_ADMIN_TOKEN=""
+```
