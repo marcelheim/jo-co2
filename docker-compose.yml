@@ -12,3 +12,18 @@ services:
       DOCKER_INFLUXDB_INIT_BUCKET: '${INFLUXDB_BUCKET}'
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: '${INFLUXDB_ADMIN_TOKEN}'
       DOCKER_INFLUXDB_INIT_MODE: 'setup'
+  jo.postgres:
+    image: 'postgres:13'
+    container_name: 'jo.postgres'
+    command:
+      - "postgres"
+      - "-c"
+      - "TimeZone=Europe/Vienna"
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: "${POSTGRES_USERNAME}"
+      POSTGRES_DB: "${POSTGRES_DATABASE}"
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
