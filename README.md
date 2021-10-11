@@ -6,6 +6,7 @@
     * Remote SSH
     * Python
     * Docker
+    * WindiCSS IntelliSense
 * Docker Desktop
 * Node.js 14
 ```properties
@@ -15,4 +16,7 @@ INFLUXDB_PASSWORD=""
 INFLUXDB_ORG=""
 INFLUXDB_BUCKET=""
 INFLUXDB_ADMIN_TOKEN=""
+POSTGRES_USERNAME=""
+POSTGRES_PASSWORD=""
+POSTGRES_DATABASE=""
 ```
