@@ -1,6 +1,6 @@
 import { InfluxDB, Point } from '@influxdata/influxdb-client'
 
-const post = async (dataClientId, data) => {
+const write = async (dataClientId, data) => {
     const {
         INFLUXDB_ORG,
         INFLUXDB_BUCKET,
@@ -36,4 +36,44 @@ const post = async (dataClientId, data) => {
         })
 }
 
-export {post}
+
+const read = async (dataClientId) => {
+    const {
+        INFLUXDB_ORG,
+        INFLUXDB_BUCKET,
+        INFLUXDB_ADMIN_TOKEN,
+        INFLUXDB_URL
+    } = process.env
+
+    const queryApi = new InfluxDB({
+        url: INFLUXDB_URL,
+        token: INFLUXDB_ADMIN_TOKEN
+    }).getQueryApi(INFLUXDB_ORG)
+
+    const fluxQuery = `from(bucket: "${INFLUXDB_BUCKET}")
+        |> range(start: -3h)
+        |> filter(fn: (r) => r["0"] == "${dataClientId}")
+        |> filter(fn: (r) => r["_field"] == "value")`
+
+    let data = {}
+
+    const fluxObserver = {
+        next(row, tableMeta) {
+            const o = tableMeta.toObject(row)
+            if(!data[o._time]) data[o._time] = {}
+            data[o._time][o._measurement] = o._value
+        },
+        error(error) {
+            console.error(error)
+            console.log('\nFinished ERROR')
+        },
+        complete() {
+            console.log('\nFinished SUCCESS')
+            console.log(data)
+        }
+    }
+
+    queryApi.queryRows(fluxQuery, fluxObserver)
+}
+
+export {read, write}
