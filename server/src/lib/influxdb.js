@@ -35,4 +35,4 @@ const write = async (dataClientId, data) => {
             console.error(e)
         })
 }
-export {read}
+export {write}
