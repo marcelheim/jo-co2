@@ -4,6 +4,7 @@
 		{ id: 2, data: {name: 'JK', temperature: 28, co2: 32, humidity: 12.2}},
 		{ id: 3, data: {name: 'Schlafzimmer', temperature: 28, co2: 35, humidity: 10.2}}
 	];
+  
 </script>
 
 <!-- This example requires Tailwind CSS v2.0+ -->
