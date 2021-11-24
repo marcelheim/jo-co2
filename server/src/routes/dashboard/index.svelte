@@ -1,10 +1,28 @@
+<script context="module">
+  export async function preload(page, session) {
+    const res = await this.fetch(`api/sensordata`);
+        const sensordata = await res.json();
+
+    let sensors = [];
+
+    for (var key in sensordata) {
+      if (sensordata.hasOwnProperty(key)) {
+        sensors.push({
+          id: key,
+          data: {
+            ...sensordata[key],
+            name: "In Progress"
+          }
+        })
+      }
+    }
+
+        return { sensors };
+  }
+</script>
+
 <script>
-	let sensors = [
-		{ id: 1, data: {name: 'Wohnzimmer', temperature: 24, co2: 22, humidity: 22.3}},
-		{ id: 2, data: {name: 'JK', temperature: 28, co2: 32, humidity: 12.2}},
-		{ id: 3, data: {name: 'Schlafzimmer', temperature: 28, co2: 35, humidity: 10.2}}
-	];
-  
+  export let sensors;
 </script>
 
 <!-- This example requires Tailwind CSS v2.0+ -->

@@ -1,8 +1,32 @@
 <script context="module">
     export async function preload(page, session) {
-		const { slug } = page.params;
-		return { slug };
-	}
+        const { slug } = page.params;
+
+        const res = await this.fetch(`api/sensordata/${slug}`);
+        const sensordata = await res.json();
+        
+        /* let tempValues = []
+        let co2Values = []
+        let humidityValues = []
+        let chartLabels = [] */
+
+        //Key ist der Zeitstempel
+        for (var key in sensordata) {
+            if (sensordata.hasOwnProperty(key)) {
+
+                //Hier Daten in verständliches Format für Chart.js umwandeln
+
+                /* var date = new Date(key);
+                chartLabels.push(date.toUTCString())
+                co2Values.push(sensordata[key].co2)
+                humidityValues.push(sensordata[key].humidity)
+                tempValues.push(sensordata[key].temperature) */
+            }
+        }
+
+        
+        return { slug };
+    }
 </script>
 
 <script>
@@ -25,16 +49,26 @@
     
     Chart.register(...registerables);
 
-    let tempValues = [20, 10, 5, 2, 20, 30, 45];
+    /* let tempValues = [20, 10, 5, 2, 20, 30, 45];
     let co2Values = [22, 12, 3, 4, 10, 40, 20];
     let humidityValues = [30, 43, 23, 3, 34, 55, 30];
     
     let chartLabels = ['Jänner', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli'];
 
     let chartCanvasTemp, chartCanvasCO2, chartCanvasHumidity;
-
+ */
     onMount(async (promise) => {
-        var ctx = chartCanvasTemp.getContext('2d');
+
+
+
+
+
+
+
+
+
+
+        /* var ctx = chartCanvasTemp.getContext('2d');
         var chartTemp = new Chart(ctx, {
             type: 'line',
             data: {
@@ -132,7 +166,7 @@
                 }
             }
         };
-        var chartHumidity = new Chart(ctx, options);
+        var chartHumidity = new Chart(ctx, options); */
     });
            
 </script>
