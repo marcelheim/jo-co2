@@ -9,6 +9,7 @@
     "start": "node __sapper__/build"
   },
   "dependencies": {
+    "@prisma/client": "^3.5.0",
     "body-parser": "^1.19.0",
     "compression": "^1.7.1",
     "express": "^4.17.1",
@@ -30,6 +31,7 @@
     "@rollup/plugin-url": "^5.0.0",
     "chart.js": "^3.5.1",
     "dotenv": "^10.0.0",
+    "prisma": "^3.5.0",
     "rollup": "^2.3.4",
     "rollup-plugin-svelte": "^7.0.0",
     "rollup-plugin-terser": "^7.0.0",
