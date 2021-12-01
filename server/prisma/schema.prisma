@@ -25,8 +25,9 @@ model DataClient {
 model EmailNotification {
     id Int @id @default(autoincrement())
     dataClient DataClient @relation(fields: [dataClientId], references: [id])
-    dataClientId Int @unique
+    dataClientId Int
     user User @relation(fields: [userId], references: [id])
-    userId String @unique
+    userId String
     thresholds String
+    enabled Boolean
 }
