@@ -1,10 +1,12 @@
 import * as db from '../../../lib/influxdb'
+import * as email from '../../../lib/email'
 import { InfluxDB } from '@influxdata/influxdb-client'
 
 const post = async (req, res, next) => {
     const { slug } = req.params
     const data = req.body
     if (data) {
+		email.checkAndSend(Number(slug), data)
         db.write(slug, data)
 		res.end('Ok')
 	} else {
