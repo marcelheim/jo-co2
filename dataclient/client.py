@@ -9,6 +9,8 @@ GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 GPIO.cleanup()
 
+input = False
+
 
 for x in range(10):
     print("Try: " + str(x))
@@ -19,6 +21,7 @@ for x in range(10):
         if dht11Result.is_valid():
             print("Temperature: %-3.1f C" % dht11Result.temperature)
             print("Humidity: %-3.1f %%" % dht11Result.humidity)
+            input = True
             break
         else:
             print("Error: %d" % dht11Result.error_code)
@@ -44,11 +47,15 @@ jsonstring = {
 headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 
 
-for x in range(10):
-    try:
-        r = requests.post('http://10.10.1.95:3000/api/sensordata/' + '1', data=json.dumps(jsonstring), headers=headers)
-        break
-    except:
-        pass
+if input:
+    for x in range(10):
+        try:
+            r = requests.post('http://10.10.2.196:3000/api/sensordata/' + '1', data=json.dumps(jsonstring), headers=headers)
+            break
+        except Exception as e:
+            print(e)
+            pass
 
-print(jsonstring)
+    print(jsonstring)
+else:
+    print ("Error")
