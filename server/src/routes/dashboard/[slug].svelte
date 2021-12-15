@@ -83,7 +83,7 @@
                         backgroundColor: gradient,
                         pointBackgroundColor: colors.green.default,
                         borderColor: colors.green.default,
-                        data: co2Values,
+                        data: tempValues,
                         lineTension: 0.2,
                         borderWidth: 2,
                         pointRadius: 3,
