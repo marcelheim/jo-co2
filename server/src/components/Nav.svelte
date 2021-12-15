@@ -70,12 +70,12 @@
 				<div class="flex-shrink-0 flex items-center">
 					<img
 						class="block lg:hidden h-8 w-auto"
-						src="https://repository-images.githubusercontent.com/406665946/ce4171f3-d6ca-405b-84c5-ca744caf518b"
+						src="https://cdn.discordapp.com/attachments/897728408811888652/916266201167052800/logo.png"
 						alt="Workflow"
 					/>
 					<img
 						class="hidden lg:block h-8 w-auto"
-						src="https://repository-images.githubusercontent.com/406665946/ce4171f3-d6ca-405b-84c5-ca744caf518b"
+						src="https://cdn.discordapp.com/attachments/897728408811888652/916266201167052800/logo.png"
 						alt="Workflow"
 					/>
 				</div>
