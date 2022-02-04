@@ -1,6 +1,7 @@
 import sirv from 'sirv';
 import compression from 'compression';
 import * as sapper from '@sapper/server';
+import { json } from 'body-parser';
 const express = require('express')
 const { auth } = require('express-openid-connect');
 require('dotenv').config({
@@ -30,6 +31,7 @@ const app = express();
 
 app.use(compression({ threshold: 0 }));
 app.use(sirv('static', { dev }));
+app.use(json())
 app.use(auth(config));
 app.use((req, res, next) => {
 	return sapper.middleware({
