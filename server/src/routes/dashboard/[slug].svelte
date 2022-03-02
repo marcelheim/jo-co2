@@ -2,16 +2,22 @@
     export async function preload(page, session) {
         const { slug } = page.params;
 
-        const res = await this.fetch(`api/sensordata/${slug}`);
-        const sensordata = await res.json();
+        const sensorRes = await this.fetch(`api/sensordata/${slug}`);
+        const emailRes = await this.fetch(`api/config/email/${slug}?userId=${1}`);
+
+        const sensordata = await sensorRes.json();
+        const emaildata = await emailRes.json();
 
         let tempValues = [];
         let co2Values = [];
         let humidityValues = [];
-        //console.log(sensordata)
+
+        console.log(sensordata);
+        console.log(sensordata[0]);
 
         //Key ist der Zeitstempel
         for (var key in sensordata) {
+            console.log(key);
             if (sensordata.hasOwnProperty(key)) {
                 //Hier Daten in verständliches Format für Chart.js umwandeln
                 var date = new Date(key);
@@ -21,21 +27,23 @@
             }
         }
 
-        return { slug, tempValues, co2Values, humidityValues };
+        return { slug, tempValues, co2Values, humidityValues, emaildata };
     }
 </script>
 
 <script>
-    export let slug, tempValues, co2Values, humidityValues;
+    export let slug, tempValues, co2Values, humidityValues, emaildata;
     import { Chart, registerables } from "chart.js";
-    //import annotationPlugin from 'chartjs-plugin-annotation';
+    import annotationPlugin from 'chartjs-plugin-annotation';
     import "chartjs-adapter-moment";
     import { onMount } from "svelte";
     import InPlaceEdit from "../../components/InPlaceEdit.svelte";
-    let sensorname = "Sensor 1"
+
+    let sensorname = "Sensor 1";
+    var thresholddata = JSON.parse(emaildata.thresholds);
 
     Chart.register(...registerables);
-
+    Chart.register(annotationPlugin)
 
     let chartCanvasTemp, chartCanvasCO2, chartCanvasHumidity;
 
@@ -66,57 +74,62 @@
         };
 
         var options = {
-                layout: {
-                    padding: 10,
-                },
-                responsive: true,
-                legend: {
-                    display: false,
-                },
-                scales: {
-                    xAxes: [
-                        {
-                            type: "timeseries",
-                            gridLines: {
-                                display: false,
-                            },
-                            ticks: {
-                                padding: 10,
-                                autoSkip: false,
-                                maxRotation: 15,
-                                minRotation: 15,
-                            },
+            layout: {
+                padding: 10,
+            },
+            responsive: true,
+            legend: {
+                display: false,
+            },
+            scales: {
+                xAxes: [
+                    {
+                        type: "time",
+                        gridLines: {
+                            display: false,
                         },
-                    ],
-                    yAxes: [
-                        {
-                            scaleLabel: {
-                                display: true,
-                                padding: 10,
-                            },
-                            gridLines: {
-                                display: true,
-                                color: colors.indigo.quarter,
-                            },
+                        ticks: {
+                            padding: 10,
+                            autoSkip: false,
+                            maxRotation: 15,
+                            minRotation: 15,
                         },
-                    ],
-                },
-                plugins: {
-                    autocolors: false,
-                    annotation: {
-                        annotations: [{
-                            line1: {
-                            type: 'line',
-                            scaleID: 'y-axis-0',
-                            yMin: 15.000,
-                            yMax: 15.000,
-                            borderColor: 'rgb(255, 99, 132)',
-                            borderWidth: 2,
-                            }
-                        }]
                     },
-                },
-            };
+                ],
+                yAxes: [
+                    {
+                        scaleLabel: {
+                            display: true,
+                            padding: 10,
+                        },
+                        gridLines: {
+                            display: true,
+                            color: colors.indigo.quarter,
+                        },
+                    },
+                ],
+            },
+            plugins: {
+                autocolors: false,
+                annotation: {
+                    annotations: [{
+                        type: 'line',
+                        mode: 'horizontal',
+                        scaleID: 'y-axis-0',
+                        yMin: 20,
+                        yMax: 20,
+                        borderColor: 'rgb(205, 92, 92)',
+                        borderWidth: 2,
+                        label: {
+                        enabled: false,
+                        content: 'Threshold'
+                        }
+                    }]
+                }
+            },
+        };
+
+        //******************************** TEMPARATURE ********************************\\
 
         var ctx = chartCanvasTemp.getContext("2d");
         let gradient = ctx.createLinearGradient(0, 25, 0, 300);
@@ -141,7 +154,10 @@
                     },
                 ],
             },
+            options
         });
+
+        //******************************** CO2 ********************************\\
 
         gradient = ctx.createLinearGradient(0, 25, 0, 300);
         gradient.addColorStop(0, colors.purple.half);
@@ -166,44 +182,11 @@
                     },
                 ],
             },
-            options: {
-                layout: {
-                    padding: 10,
-                },
-                responsive: true,
-                legend: {
-                    display: false,
-                },
-                scales: {
-                    xAxes: [
-                        {
-                            type: "time",
-                            gridLines: {
-                                display: false,
-                            },
-                            ticks: {
-                                padding: 10,
-                                autoSkip: false,
-                                maxRotation: 15,
-                                minRotation: 15,
-                            },
-                        },
-                    ],
-                    yAxes: [
-                        {
-                            scaleLabel: {
-                                display: true,
-                                padding: 10,
-                            },
-                            gridLines: {
-                                display: true,
-                                color: colors.indigo.quarter,
-                            },
-                        },
-                    ],
-                },
-            },
+            options
         });
+
+
+        //******************************** HUMIDITY ********************************\\
 
         gradient = ctx.createLinearGradient(0, 25, 0, 300);
         gradient.addColorStop(0, colors.blue.half);
@@ -228,45 +211,12 @@
                     },
                 ],
             },
-            options: {
-                layout: {
-                    padding: 10,
-                },
-                responsive: true,
-                legend: {
-                    display: false,
-                },
-                scales: {
-                    xAxes: [
-                        {
-                            type: "time",
-                            gridLines: {
-                                display: false,
-                            },
-                            ticks: {
-                                padding: 10,
-                                autoSkip: false,
-                                maxRotation: 15,
-                                minRotation: 15,
-                            },
-                        },
-                    ],
-                    yAxes: [
-                        {
-                            scaleLabel: {
-                                display: true,
-                                padding: 10,
-                            },
-                            gridLines: {
-                                display: true,
-                                color: colors.indigo.quarter,
-                            },
-                        },
-                    ],
-                },
-            },
+            options
         });
+
     });
+
+    console.log(typeof thresholddata)
 
 </script>
 
