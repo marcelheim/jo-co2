@@ -9,7 +9,7 @@ const get = async (req, res, next) => {
         client = await prisma.emailNotification.findFirst({
             where: {
                 dataClientId: Number(slug),
-                userId: data.userId
+                userId: req.query.userId
             }
         })
     }
