@@ -13,7 +13,7 @@
 				<!-- Mobile menu button-->
 				<button
 					type="button"
-					class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+					class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700"
 					aria-controls="mobile-menu"
 					aria-expanded="false"
 				>
@@ -83,7 +83,7 @@
 					<div class="flex space-x-4">
 						<!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
 						<a
-							class="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
+							class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium  active:bg-gray-900"
 							aria-current={segment === "home"
 								? "page"
 								: undefined}
@@ -91,7 +91,7 @@
 						>
 
 						<a
-							class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+							class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium active:bg-gray-900"
 							aria-current={segment === "dashboard"
 								? "page"
 								: undefined}
@@ -99,7 +99,7 @@
 						>
 
 						<a
-							class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+							class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium active:bg-gray-900"
 							aria-current={segment === "about"
 								? "page"
 								: undefined}

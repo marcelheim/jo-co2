@@ -43,6 +43,11 @@
 
     let chartCanvasTemp, chartCanvasCO2, chartCanvasHumidity;
 
+    function updateThresholds(){
+        console.log(thresholddata);
+        wretch(`api/config/email/${slug}?userId=${1}?thresholds=${thresholddata}`);
+    }
+
     onMount(async (promise) => {
         const colors = {
             purple: {
@@ -310,7 +315,7 @@
                 </label>
             </div>
             <div class="md:w-2/3">
-                <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-full-name" type="text" bind:value={thresholddata.temperature}>
+                <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-full-name" type="text" bind:value={thresholddata.temperature} on:input={updateThresholds}>
             </div>
         </div>
     </form>
