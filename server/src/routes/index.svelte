@@ -4,7 +4,7 @@
 </script>
 
 <svelte:head>
-	<title>Home</title>
+	<title>Jo-CO₂</title>
 </svelte:head>
   
 {#if $session.isAuthenticated}

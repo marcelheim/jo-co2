@@ -328,6 +328,10 @@
 
 </script>
 
+<svelte:head>
+    <title>Dashboard {sensorname}</title>
+</svelte:head>
+
 <div class="flex justify-center m-12">
    <div class="self-center w-full max-w-sm">
         <div class="flex justify-center mb-6">
@@ -340,13 +344,12 @@
             <label class="text-gray-500 font-bold">
                 <input bind:checked={emailEnabled} on:change={e => updateEmail()} disabled={!isAuthenticated} class="mr-2 leading-tight" type="checkbox">
                 <span class="text-sm">
-                Send E-Mail
+                E-Mail Benachrichtigungen
                 </span>
             </label>
         </div>
     </div>
 </div>
-
 
 <div class="flex justify-center m-12">
     <div class="chart-container w-2/3 m-4">
