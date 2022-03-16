@@ -45,7 +45,7 @@ const send = async (email, sensor, data) => {
     sgMail
         .send(msg)
         .then(() => {
-            console.log('Email sent')
+            //console.log('Email sent')
         })
         .catch((error) => {
             console.error(error)

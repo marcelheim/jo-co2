@@ -12,12 +12,8 @@
         let co2Values = [];
         let humidityValues = [];
 
-        console.log(sensordata);
-        console.log(sensordata[0]);
-
         //Key ist der Zeitstempel
         for (var key in sensordata) {
-            console.log(key);
             if (sensordata.hasOwnProperty(key)) {
                 //Hier Daten in verständliches Format für Chart.js umwandeln
                 var date = new Date(key);
@@ -46,6 +42,11 @@
     Chart.register(annotationPlugin)
 
     let chartCanvasTemp, chartCanvasCO2, chartCanvasHumidity;
+
+    function updateThresholds(){
+        console.log(thresholddata);
+        wretch(`api/config/email/${slug}?userId=${1}?thresholds=${thresholddata}`);
+    }
 
     onMount(async (promise) => {
         const colors = {
@@ -129,6 +130,70 @@
             },
         };
 
+        function getOptionData(thresholdKey){
+
+            var thresholdValue = null;
+            if (thresholddata[thresholdKey] != undefined) {
+                thresholdValue = thresholddata[thresholdKey];
+            }
+
+            return {
+                layout: {
+                    padding: 10,
+                },
+                responsive: true,
+                legend: {
+                    display: false,
+                },
+                scales: {
+                    xAxes: [
+                        {
+                            type: "time",
+                            gridLines: {
+                                display: false,
+                            },
+                            ticks: {
+                                padding: 10,
+                                autoSkip: false,
+                                maxRotation: 15,
+                                minRotation: 15,
+                            },
+                        },
+                    ],
+                    yAxes: [
+                        {
+                            scaleLabel: {
+                                display: true,
+                                padding: 10,
+                            },
+                            gridLines: {
+                                display: true,
+                                color: colors.indigo.quarter,
+                            },
+                        },
+                    ],
+                },
+                plugins: {
+                    autocolors: false,
+                    annotation: thresholdValue != undefined ? {
+                        annotations: [{
+                            type: 'line',
+                            mode: 'horizontal',
+                            scaleID: 'y-axis-0',
+                            yMin: thresholdValue,
+                            yMax: thresholdValue,
+                            borderColor: 'rgb(10,20,60)',
+                            borderWidth: 2,
+                            label: {
+                            enabled: false,
+                            content: 'Threshold'
+                            }
+                        }]
+                    } : undefined
+                },
+            };
+        }
+
         //******************************** TEMPARATURE ********************************\\
 
         var ctx = chartCanvasTemp.getContext("2d");
@@ -154,7 +219,7 @@
                     },
                 ],
             },
-            options
+            options: getOptionData("temperature")
         });
 
         //******************************** CO2 ********************************\\
@@ -182,7 +247,7 @@
                     },
                 ],
             },
-            options
+            options: getOptionData("co2")
         });
 
 
@@ -211,12 +276,10 @@
                     },
                 ],
             },
-            options
+            options: getOptionData("humidity")
         });
 
     });
-
-    console.log(typeof thresholddata)
 
 </script>
 
@@ -252,7 +315,7 @@
                 </label>
             </div>
             <div class="md:w-2/3">
-                <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-full-name" type="text" value="0">
+                <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-full-name" type="text" bind:value={thresholddata.temperature} on:input={updateThresholds}>
             </div>
         </div>
     </form>
@@ -270,7 +333,7 @@
                 </label>
             </div>
             <div class="md:w-2/3">
-                <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-full-name" type="text" value="0">
+                <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-full-name" type="text" bind:value={thresholddata.co2}>
             </div>
         </div>
     </form>
@@ -288,7 +351,7 @@
                 </label>
             </div>
             <div class="md:w-2/3">
-                <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-full-name" type="text" value="0">
+                <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-full-name" type="text" bind:value={thresholddata.humidity}>
             </div>
         </div>
     </form>
