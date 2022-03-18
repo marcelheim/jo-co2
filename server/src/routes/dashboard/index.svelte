@@ -5,13 +5,21 @@
 
     let sensors = [];
 
+    console.log(page)
+
     for (var key in sensordata) {
       if (sensordata.hasOwnProperty(key)) {
+
+        const sensorConfig = await (await this.fetch(`api/config/client/${key}`)).json()
+        let name = `Sensor ${key}`
+
+        if(sensorConfig && sensorConfig.name) name = sensorConfig.name;
+
         sensors.push({
           id: key,
           data: {
             ...sensordata[key],
-            name: "In Progress"
+            name: name
           }
         })
       }
@@ -24,6 +32,10 @@
 <script>
   export let sensors;
 </script>
+
+<svelte:head>
+  <title>Dashboard</title>
+</svelte:head>
 
 <div class="flex flex-col p-10">
     <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -63,16 +75,16 @@
                   <div class="text-sm text-gray-900">{sensor.data.name}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">{sensor.data.temperature} °C</div>
+                    <div class="text-sm text-gray-900">{Math.round(sensor.data.temperature * 100 + Number.EPSILON) / 100} °C</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-900">{sensor.data.co2} ppm</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">{sensor.data.humidity} %</div>
+                    <div class="text-sm text-gray-900">{Math.round(sensor.data.humidity * 100 + Number.EPSILON) / 100} %</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <a href="dashboard/{sensor.id}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                  <a href="dashboard/{sensor.id}" class="text-indigo-600 hover:text-indigo-900">Anzeigen</a>
                 </td>
               </tr>
               {/each}

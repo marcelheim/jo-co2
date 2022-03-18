@@ -37,7 +37,7 @@ const post = async (req, res, next) => {
         }
         main()
             .catch((e) => {
-                throw e
+                console.log(e)
             })
             .finally(async () => {
                 await prisma.$disconnect()

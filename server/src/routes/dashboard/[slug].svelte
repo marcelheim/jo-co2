@@ -1,12 +1,9 @@
 <script context="module">
-    export async function preload(page, session) {
+    export async function preload(page) {
         const { slug } = page.params;
 
         const sensorRes = await this.fetch(`api/sensordata/${slug}`);
-        const emailRes = await this.fetch(`api/config/email/${slug}?userId=${1}`);
-
         const sensordata = await sensorRes.json();
-        const emaildata = await emailRes.json();
 
         let tempValues = [];
         let co2Values = [];
@@ -23,32 +20,80 @@
             }
         }
 
-        return { slug, tempValues, co2Values, humidityValues, emaildata };
+        return { slug, tempValues, co2Values, humidityValues };
     }
 </script>
 
 <script>
-    export let slug, tempValues, co2Values, humidityValues, emaildata;
+    export let slug, tempValues, co2Values, humidityValues;
     import { Chart, registerables } from "chart.js";
     import annotationPlugin from 'chartjs-plugin-annotation';
     import "chartjs-adapter-moment";
     import { onMount } from "svelte";
     import InPlaceEdit from "../../components/InPlaceEdit.svelte";
+    import wretch from 'wretch'
+    import { stores } from '@sapper/app'
+    const { session } = stores()
 
-    let sensorname = "Sensor 1";
-    var thresholddata = JSON.parse(emaildata.thresholds);
+    const {isAuthenticated, user} = $session
 
+    let userData = null;
+    let emaildata = null;
+    let sensorConfig = null;
+    let emailEnabled = false;
+    var thresholddata = {};
+    let sensorname = `Sensor ${slug}`;
+ 
     Chart.register(...registerables);
     Chart.register(annotationPlugin)
 
     let chartCanvasTemp, chartCanvasCO2, chartCanvasHumidity;
 
-    function updateThresholds(){
-        console.log(thresholddata);
-        wretch(`api/config/email/${slug}?userId=${1}?thresholds=${thresholddata}`);
+    async function updateEmail(){
+        if(!emaildata) emaildata = await wretch(`api/config/email/${slug}?userId=${user.sub}`)
+            .post({
+                "userId": user.sub,
+                "thresholds": {
+                    "co2": Number(thresholddata.co2),
+                    "temperature": Number(thresholddata.temperature),
+                    "humidity": Number(thresholddata.humidity)
+                },
+                "enabled": emailEnabled
+            }).json()
+        else emaildata = await wretch(`api/config/email/${slug}`)
+            .put({
+                "userId": user.sub,
+                "thresholds": JSON.stringify(thresholddata),
+                "enabled": emailEnabled
+            })
+            .json()
     }
 
-    onMount(async (promise) => {
+    async function updateSensorName(name){
+        if(!sensorConfig) sensorConfig = await wretch(`api/config/client/${slug}`)
+            .post({"name": name})
+            .json()
+        else sensorConfig = await wretch(`api/config/client/${slug}`)
+            .put({"name": name})
+            .json()
+    }
+
+    onMount(async () => {
+        sensorConfig = await wretch(`api/config/client/${slug}`).get().json()
+        if(!sensorConfig) sensorConfig = await wretch(`api/config/client/${slug}`).post({"name": sensorname})
+        if(isAuthenticated) {
+            userData = await wretch(`api/config/user/${user.sub}`).get().json()
+            if(!userData) userData = await wretch(`api/config/user/${user.sub}`).post({"email": user.email}).json()
+            emaildata = await wretch(`api/config/email/${slug}?userId=${user.sub}`).get().json()
+        }
+
+        
+
+        if(emaildata && emaildata.thresholds) thresholddata = JSON.parse(emaildata.thresholds);
+        if(emaildata && emaildata.enabled) emailEnabled = emaildata.enabled;
+
+        if(sensorConfig && sensorConfig.name && sensorConfig.name != "") sensorname = sensorConfig.name;
+
         const colors = {
             purple: {
                 default: "rgba(149, 76, 233, 1)",
@@ -283,25 +328,28 @@
 
 </script>
 
+<svelte:head>
+    <title>Dashboard {sensorname}</title>
+</svelte:head>
+
 <div class="flex justify-center m-12">
    <div class="self-center w-full max-w-sm">
         <div class="flex justify-center mb-6">
             <h1 class="text-3xl font-bold">
-                <InPlaceEdit bind:value={sensorname}/>
+                <InPlaceEdit bind:value={sensorname} on:submit={e => updateSensorName(e.detail)}/>
             </h1>
         </div>
             
         <div class="flex justify-center mb-6">
             <label class="text-gray-500 font-bold">
-                <input class="mr-2 leading-tight" type="checkbox">
+                <input bind:checked={emailEnabled} on:change={e => updateEmail()} disabled={!isAuthenticated} class="mr-2 leading-tight" type="checkbox">
                 <span class="text-sm">
-                Send E-Mail
+                E-Mail Benachrichtigungen
                 </span>
             </label>
         </div>
     </div>
 </div>
-
 
 <div class="flex justify-center m-12">
     <div class="chart-container w-2/3 m-4">
@@ -315,7 +363,12 @@
                 </label>
             </div>
             <div class="md:w-2/3">
-                <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-full-name" type="text" bind:value={thresholddata.temperature} on:input={updateThresholds}>
+                <input disabled={!isAuthenticated} bind:value={thresholddata.temperature} on:mouseleave={updateEmail} on:submit|preventDefault on:keydown={e =>{
+                    if(e.key == 'Enter') {
+                        e.preventDefault()
+                        updateEmail
+                    }
+                }} class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-full-name" type="text">
             </div>
         </div>
     </form>
@@ -333,7 +386,12 @@
                 </label>
             </div>
             <div class="md:w-2/3">
-                <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-full-name" type="text" bind:value={thresholddata.co2}>
+                <input disabled={!isAuthenticated} bind:value={thresholddata.co2} on:mouseleave={updateEmail} on:submit|preventDefault on:keydown={e =>{
+                    if(e.key == 'Enter') {
+                        e.preventDefault()
+                        updateEmail
+                    }
+                }} class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-full-name" type="text">
             </div>
         </div>
     </form>
@@ -351,7 +409,12 @@
                 </label>
             </div>
             <div class="md:w-2/3">
-                <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-full-name" type="text" bind:value={thresholddata.humidity}>
+                <input disabled={!isAuthenticated} bind:value={thresholddata.humidity} on:mouseleave={updateEmail} on:submit|preventDefault on:keydown={e =>{
+                    if(e.key == 'Enter') {
+                        e.preventDefault()
+                        updateEmail
+                    }
+                }} class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-full-name" type="text">
             </div>
         </div>
     </form>
