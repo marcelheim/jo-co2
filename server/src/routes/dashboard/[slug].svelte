@@ -53,11 +53,7 @@
         if(!emaildata) emaildata = await wretch(`api/config/email/${slug}?userId=${user.sub}`)
             .post({
                 "userId": user.sub,
-                "thresholds": {
-                    "co2": Number(thresholddata.co2),
-                    "temperature": Number(thresholddata.temperature),
-                    "humidity": Number(thresholddata.humidity)
-                },
+                "thresholds": JSON.stringify(thresholddata),
                 "enabled": emailEnabled
             }).json()
         else emaildata = await wretch(`api/config/email/${slug}`)
