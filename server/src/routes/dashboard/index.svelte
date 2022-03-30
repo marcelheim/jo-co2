@@ -7,14 +7,17 @@
 
     console.log(page)
 
+    //Sensordaten werden dynamisch geladen
     for (var key in sensordata) {
       if (sensordata.hasOwnProperty(key)) {
 
         const sensorConfig = await (await this.fetch(`api/config/client/${key}`)).json()
+        // Sensorname wird standardmäßig auf Sensor $key (z.B. Sensor 1) gesetzt
         let name = `Sensor ${key}`
 
         if(sensorConfig && sensorConfig.name) name = sensorConfig.name;
 
+        // Die Daten des Sensors werden in das Array gepushed
         sensors.push({
           id: key,
           data: {
@@ -42,6 +45,8 @@
       <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
         <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
           <table class="min-w-full divide-y divide-gray-200">
+
+            <!-- Spaltenbezeichnungen -->
             <thead class="bg-gray-50">
               <tr>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -60,17 +65,20 @@
                     Luftfeuchtigkeit
                 </th>
                 <th scope="col" class="relative px-6 py-3">
-                  <span class="sr-only">Edit</span>
+                  <span class="sr-only">Anzeigen</span>
                 </th>
               </tr>
             </thead>
+            
+            <!-- Daten für die Sensoren -->
             <tbody class="bg-white divide-y divide-gray-200">
-             {#each sensors as sensor}
+              
+              <!-- Sendordaten werden dynamisch in die HTML Tabelle geladen -->
+              {#each sensors as sensor}
               <tr>
                 <td class="px-6 py-4 whitespace-nowrap flex items-center">
                     <div class="text-sm font-medium text-gray-900">{sensor.id}</div>
                 </td>
-                
                 <td class="px-15 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-900">{sensor.data.name}</div>
                 </td>
@@ -89,6 +97,7 @@
               </tr>
               {/each}
             </tbody>
+            
           </table>
         </div>
       </div>

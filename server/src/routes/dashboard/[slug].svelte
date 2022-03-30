@@ -9,10 +9,10 @@
         let co2Values = [];
         let humidityValues = [];
 
-        //Key ist der Zeitstempel
+        // Key ist der Zeitstempel
         for (var key in sensordata) {
             if (sensordata.hasOwnProperty(key)) {
-                //Hier Daten in verständliches Format für Chart.js umwandeln
+                // Hier Daten in verständliches Format für Chart.js umwandeln
                 var date = new Date(key);
                 tempValues.push({ x: date.toLocaleString(), y: sensordata[key].temperature });
                 co2Values.push({ x: date.toLocaleString(), y: sensordata[key].co2 });
@@ -25,7 +25,10 @@
 </script>
 
 <script>
+    // Arrays aus dem Script tag werden exportiert
     export let slug, tempValues, co2Values, humidityValues;
+    
+    // Imports der einzelnen Packages
     import { Chart, registerables } from "chart.js";
     import annotationPlugin from 'chartjs-plugin-annotation';
     import "chartjs-adapter-moment";
@@ -33,8 +36,11 @@
     import InPlaceEdit from "../../components/InPlaceEdit.svelte";
     import wretch from 'wretch'
     import { stores } from '@sapper/app'
+
+    // Globale Variable User Session
     const { session } = stores()
 
+    // Benötigte Variablen werden aus der session geholt
     const {isAuthenticated, user} = $session
 
     let userData = null;
@@ -42,24 +48,26 @@
     let sensorConfig = null;
     let emailEnabled = false;
     var thresholddata = {};
+
+    // Sensor wird mittels slug nummeriert
     let sensorname = `Sensor ${slug}`;
  
     Chart.register(...registerables);
     Chart.register(annotationPlugin)
 
+    // Variablen für die Charts
     let chartCanvasTemp, chartCanvasCO2, chartCanvasHumidity;
 
     async function updateEmail(){
+        
+        // Neue Email data wird an die API gesendet
         if(!emaildata) emaildata = await wretch(`api/config/email/${slug}?userId=${user.sub}`)
             .post({
                 "userId": user.sub,
-                "thresholds": {
-                    "co2": Number(thresholddata.co2),
-                    "temperature": Number(thresholddata.temperature),
-                    "humidity": Number(thresholddata.humidity)
-                },
+                "thresholds": JSON.stringify(thresholddata),
                 "enabled": emailEnabled
             }).json()
+        // Vorhandene Email data wird bearbeitet
         else emaildata = await wretch(`api/config/email/${slug}`)
             .put({
                 "userId": user.sub,
@@ -69,6 +77,7 @@
             .json()
     }
 
+    // Der Name des Sensors wird in der Datenbank gespeichert
     async function updateSensorName(name){
         if(!sensorConfig) sensorConfig = await wretch(`api/config/client/${slug}`)
             .post({"name": name})
@@ -79,21 +88,24 @@
     }
 
     onMount(async () => {
+        // Dataclient und User Konfiguration werden geladen und falls sie nicht existieren, wird ein neuer Datenbank Eintrag erstellt
         sensorConfig = await wretch(`api/config/client/${slug}`).get().json()
         if(!sensorConfig) sensorConfig = await wretch(`api/config/client/${slug}`).post({"name": sensorname})
         if(isAuthenticated) {
+            // Konfiguration für den User wird geladen und falls diese nicht existieren werden sie erstellt
             userData = await wretch(`api/config/user/${user.sub}`).get().json()
             if(!userData) userData = await wretch(`api/config/user/${user.sub}`).post({"email": user.email}).json()
+            // Die vorhandenen Email Daten werden geladen
             emaildata = await wretch(`api/config/email/${slug}?userId=${user.sub}`).get().json()
         }
 
-        
-
+        // Wenn man angemeldet ist, werden die Email Einstellungen, Thresholds sowie Sensornamen geladen
         if(emaildata && emaildata.thresholds) thresholddata = JSON.parse(emaildata.thresholds);
         if(emaildata && emaildata.enabled) emailEnabled = emaildata.enabled;
 
         if(sensorConfig && sensorConfig.name && sensorConfig.name != "") sensorname = sensorConfig.name;
 
+        // Farbverläufe für die Charts
         const colors = {
             purple: {
                 default: "rgba(149, 76, 233, 1)",
@@ -119,64 +131,10 @@
             },
         };
 
-        var options = {
-            layout: {
-                padding: 10,
-            },
-            responsive: true,
-            legend: {
-                display: false,
-            },
-            scales: {
-                xAxes: [
-                    {
-                        type: "time",
-                        gridLines: {
-                            display: false,
-                        },
-                        ticks: {
-                            padding: 10,
-                            autoSkip: false,
-                            maxRotation: 15,
-                            minRotation: 15,
-                        },
-                    },
-                ],
-                yAxes: [
-                    {
-                        scaleLabel: {
-                            display: true,
-                            padding: 10,
-                        },
-                        gridLines: {
-                            display: true,
-                            color: colors.indigo.quarter,
-                        },
-                    },
-                ],
-            },
-            plugins: {
-                autocolors: false,
-                annotation: {
-                    annotations: [{
-                        type: 'line',
-                        mode: 'horizontal',
-                        scaleID: 'y-axis-0',
-                        yMin: 20,
-                        yMax: 20,
-                        borderColor: 'rgb(205, 92, 92)',
-                        borderWidth: 2,
-                        label: {
-                        enabled: false,
-                        content: 'Threshold'
-                        }
-                    }]
-                }
-            },
-        };
-
+        // Einstellungen für die Charts, die bei allen Charts bis auf Kleinigkeiten gleich sind
         function getOptionData(thresholdKey){
 
+            // Es muss bei diesen Charts nur der thresholdValue überarbeitet werden
             var thresholdValue = null;
             if (thresholddata[thresholdKey] != undefined) {
                 thresholdValue = thresholddata[thresholdKey];
@@ -191,9 +149,9 @@
                     display: false,
                 },
                 scales: {
-                    xAxes: [
+                    x: [
                         {
-                            type: "time",
+                            type: "timeseries",
                             gridLines: {
                                 display: false,
                             },
@@ -328,18 +286,24 @@
 
 </script>
 
+
+<!-- Sensordaten -->
 <svelte:head>
     <title>Dashboard {sensorname}</title>
 </svelte:head>
 
 <div class="flex justify-center m-12">
-   <div class="self-center w-full max-w-sm">
+    
+    <div class="self-center w-full max-w-sm">
+        
+        <!-- Sensorname -->
         <div class="flex justify-center mb-6">
             <h1 class="text-3xl font-bold">
                 <InPlaceEdit bind:value={sensorname} on:submit={e => updateSensorName(e.detail)}/>
             </h1>
         </div>
             
+        <!-- E-Mail-Benachrichtigungs-Checkbox -->
         <div class="flex justify-center mb-6">
             <label class="text-gray-500 font-bold">
                 <input bind:checked={emailEnabled} on:change={e => updateEmail()} disabled={!isAuthenticated} class="mr-2 leading-tight" type="checkbox">
@@ -348,13 +312,18 @@
                 </span>
             </label>
         </div>
+
     </div>
 </div>
 
 <div class="flex justify-center m-12">
+
+    <!-- Temperatur-Chart -->
     <div class="chart-container w-2/3 m-4">
         <canvas bind:this={chartCanvasTemp} id="my-chart" />
     </div>
+
+    <!-- Tempatur-Threshold-Feld -->
     <form class="self-center w-full max-w-sm">
         <div class="md:flex md:items-center mb-6">
             <div class="md:w-1/3">
@@ -362,6 +331,8 @@
                     Threshold
                 </label>
             </div>
+
+            <!-- Anmeldung zum Bearbeiten notwendig -->
             <div class="md:w-2/3">
                 <input disabled={!isAuthenticated} bind:value={thresholddata.temperature} on:mouseleave={updateEmail} on:submit|preventDefault on:keydown={e =>{
                     if(e.key == 'Enter') {
@@ -370,14 +341,20 @@
                     }
                 }} class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-full-name" type="text">
             </div>
+
         </div>
     </form>
+
 </div>
 
 <div class="flex justify-center m-12">
+
+    <!-- CO2-Chart -->
     <div class="chart-container w-2/3 m-4">
         <canvas bind:this={chartCanvasCO2} id="my-chart" />
     </div>
+
+    <!-- CO2-Thresold-Feld -->
     <form class="self-center w-full max-w-sm">
         <div class="md:flex md:items-center mb-6">
             <div class="md:w-1/3">
@@ -385,6 +362,8 @@
                     Threshold
                 </label>
             </div>
+
+            <!-- Anmeldung zum Bearbeiten notwendig -->
             <div class="md:w-2/3">
                 <input disabled={!isAuthenticated} bind:value={thresholddata.co2} on:mouseleave={updateEmail} on:submit|preventDefault on:keydown={e =>{
                     if(e.key == 'Enter') {
@@ -393,14 +372,20 @@
                     }
                 }} class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-full-name" type="text">
             </div>
+
         </div>
     </form>
+
 </div>
 
 <div class="flex justify-center m-12">
+
+    <!-- Luftfeuchtigkeit-Chart -->
     <div class="chart-container w-2/3 m-4">
         <canvas bind:this={chartCanvasHumidity} id="my-chart" />
     </div>
+
+    <!-- Luftfeuchtigkeit-Thresholdfeld -->
     <form class="self-center w-full max-w-sm">
         <div class="md:flex md:items-center mb-6">
             <div class="md:w-1/3">
@@ -408,6 +393,8 @@
                     Threshold
                 </label>
             </div>
+
+            <!-- Anmeldung zum Bearbeiten notwendig -->
             <div class="md:w-2/3">
                 <input disabled={!isAuthenticated} bind:value={thresholddata.humidity} on:mouseleave={updateEmail} on:submit|preventDefault on:keydown={e =>{
                     if(e.key == 'Enter') {
@@ -416,6 +403,8 @@
                     }
                 }} class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="inline-full-name" type="text">
             </div>
+    
         </div>
     </form>
+
 </div>
